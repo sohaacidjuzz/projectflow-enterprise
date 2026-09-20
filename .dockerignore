@@ -4,4 +4,7 @@
 **/.git
 **/.env
 **/uploads
-*.zip
+**/*.log
+.gitignore
+.github
+README.md
