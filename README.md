@@ -138,13 +138,17 @@ curl http://localhost:8080/api/health
 The application UI includes:
 
 - Overview dashboard
+![alt text](image.png)
 - Project list
+![alt text](image-1.png)
 - Kanban project board
+![alt text](image-2.png)
 - Task collaboration modal
+![alt text](image-3.png)
 - Analytics view
+![alt text](image-4.png)
 - Admin role management
-
-After the first local run, capture screenshots into `docs/screenshots/` and reference them here. Keeping screenshots generated from the actual build avoids documenting a UI that differs from the deployed version.
+![alt text](image-5.png)
 
 ## Security and production notes
 
