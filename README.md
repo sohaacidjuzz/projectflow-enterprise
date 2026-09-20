@@ -1,123 +1,182 @@
 # ProjectFlow Enterprise
 
-Portfolio-grade project management platform built with Angular + Node.js + PostgreSQL.
+> Portfolio-grade project management platform built with **Angular 19 + Node.js/Express + PostgreSQL + Prisma**, packaged as a reproducible Docker application.
 
-## Highlights
-- Angular standalone app
-- Node.js + Express REST API
-- PostgreSQL + Prisma ORM
-- JWT authentication
-- RBAC: Admin, Manager, Developer
-- Kanban board with drag and drop (Angular CDK)
-- Projects, members, tasks, comments
-- File attachments
-- In-app notifications
-- Project analytics
-- Audit-friendly role controls
-- Dockerized production deployment
-- Health check endpoint
+[![CI](https://github.com/YOUR_USERNAME/projectflow-enterprise/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/projectflow-enterprise/actions/workflows/ci.yml)
 
-## Roles
-**Admin**
-- Manage users and roles
-- Access all projects
-- Create / update / delete projects
-- Manage members and tasks
+## Why this project
 
-**Manager**
-- Create / update projects
-- Manage project members
-- Create / update / assign tasks
-- View analytics
+ProjectFlow demonstrates a realistic full-stack application rather than a CRUD-only demo. It combines authentication, role-based authorization, project/task workflows, collaboration, file handling, analytics, containerization, and continuous integration in one codebase.
 
-**Developer**
-- View assigned/member projects
-- Move/update project tasks
-- Add comments and attachments
-- Read notifications
+## Feature set
 
-## One-command Docker startup
+- 🔐 JWT authentication and protected API routes
+- 👥 RBAC: **Admin, Manager, Developer**
+- 📁 Project and membership management
+- 📋 Kanban board with drag-and-drop ordering
+- 📝 Tasks, priorities, due dates, and assignments
+- 💬 Task comments
+- 📎 File attachments
+- 🔔 In-app notifications
+- 📊 Project analytics
+- 🐘 PostgreSQL + Prisma ORM
+- 🐳 Docker + Docker Compose
+- ❤️ Health endpoint
+- ⚙️ GitHub Actions CI
+- 📚 Architecture, API, deployment, security, and interview documentation
 
-Prerequisite: Docker Desktop must be running. From the extracted project folder, run:
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Angular 19, TypeScript, Angular CDK, RxJS |
+| Backend | Node.js 22, Express |
+| Database | PostgreSQL 16 |
+| ORM | Prisma 6 |
+| Auth | JWT + bcrypt |
+| Uploads | Multer + persistent Docker volume |
+| DevOps | Docker, Docker Compose, GitHub Actions |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Browser --> Angular[Angular SPA]
+    Angular -->|REST + JWT| API[Express API]
+    API --> Prisma[Prisma]
+    Prisma --> DB[(PostgreSQL)]
+    API --> Files[(Upload Volume)]
+    API --> Notify[Notifications]
+    API --> RBAC[RBAC / Access Control]
+```
+
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the detailed design.
+
+## Run with one command
+
+### Prerequisites
+
+- Docker Desktop
+- Git
+
+Clone the repository and run:
 
 ```bash
+git clone https://github.com/YOUR_USERNAME/projectflow-enterprise.git
+cd projectflow-enterprise
 docker compose up --build
 ```
 
-The first startup automatically:
+Open **http://localhost:8080**.
 
-- pulls PostgreSQL and Node images,
-- installs frontend/backend dependencies inside Docker,
-- builds the Angular production bundle,
-- generates the Prisma client,
-- creates/updates the PostgreSQL schema with `prisma db push`,
-- seeds the demo administrator idempotently, and
-- starts the application on `http://localhost:8080`.
+The first startup automatically builds Angular, generates Prisma Client, creates the PostgreSQL schema, seeds a local admin account, and starts the application.
 
-Demo login: `admin@projectflow.dev` / `Admin@123`.
+### Demo account
 
-To reset all database and upload data and start fresh:
+Default local credentials:
+
+```text
+Email:    admin@projectflow.dev
+Password: Admin@123
+```
+
+These are **demo-only defaults**. Override `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` for any shared or public deployment.
+
+### Reset the demo
 
 ```bash
 docker compose down -v
 docker compose up --build
 ```
 
-## Local development
+The `-v` removes the local PostgreSQL and attachment volumes.
 
-1. Copy environment file:
-```bash
-cp server/.env.example server/.env
-```
+## Local development without the full app container
 
-2. Start PostgreSQL:
+Start PostgreSQL:
+
 ```bash
 docker compose up postgres -d
 ```
 
-3. Backend:
+Backend:
+
 ```bash
 cd server
+cp .env.example .env
 npm install
-npx prisma migrate dev --name init
+npx prisma db push
 npm run seed
 npm run dev
 ```
 
-4. Frontend:
+Frontend:
+
 ```bash
 cd client
 npm install
 npm start
 ```
 
-Frontend: http://localhost:4200  
-API: http://localhost:3000/api
+Then use:
 
-Seed admin:
-- Email: `admin@projectflow.dev`
-- Password: `Admin@123`
+- Frontend: http://localhost:4200
+- API: http://localhost:3000/api
 
-Change the seed password and JWT secret before any public deployment.
+## API
 
-## Production
+See [`docs/API.md`](docs/API.md) for the endpoint catalog.
+
+Health check:
+
 ```bash
-docker compose up --build -d
+curl http://localhost:8080/api/health
 ```
 
-App: http://localhost:8080
+## Screenshots
 
-## Production environment
-Required:
-- `DATABASE_URL`
-- `JWT_SECRET`
-- `PORT`
+The application UI includes:
 
-Optional:
-- `UPLOAD_DIR`
-- `MAX_UPLOAD_MB`
+- Overview dashboard
+- Project list
+- Kanban project board
+- Task collaboration modal
+- Analytics view
+- Admin role management
 
-## Cloud deployment
-This repo can be deployed as a Docker service to Render, Railway, Fly.io, Azure Web App for Containers, AWS ECS, Google Cloud Run, or similar.
+After the first local run, capture screenshots into `docs/screenshots/` and reference them here. Keeping screenshots generated from the actual build avoids documenting a UI that differs from the deployed version.
 
-For production, use a managed PostgreSQL database and persistent object storage (S3/Cloud Storage/Azure Blob) for attachments instead of local disk.
+## Security and production notes
+
+This repository is a portfolio/demo application. Before production deployment:
+
+- Use a long random `JWT_SECRET`.
+- Store secrets in a platform secret manager.
+- Use HTTPS.
+- Restrict `CLIENT_ORIGIN`.
+- Use managed PostgreSQL.
+- Move attachments to private object storage.
+- Add rate limiting and stronger upload validation.
+- Add structured audit logs, metrics, tracing, and dependency/container scanning.
+
+See [`docs/SECURITY.md`](docs/SECURITY.md) and [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+
+## CI/CD
+
+GitHub Actions runs on pushes and pull requests to `main` and:
+
+1. installs server dependencies,
+2. generates Prisma Client,
+3. installs frontend dependencies,
+4. builds Angular,
+5. validates the Docker image.
+
+Workflow: [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+
+## Portfolio / interview material
+
+[`docs/PORTFOLIO_TALKING_POINTS.md`](docs/PORTFOLIO_TALKING_POINTS.md) covers architecture decisions and questions you can discuss in interviews.
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).

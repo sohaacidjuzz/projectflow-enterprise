@@ -24,9 +24,13 @@ services:
       NODE_ENV: production
       PORT: 8080
       DATABASE_URL: postgresql://projectflow:projectflow@postgres:5432/projectflow?schema=public
-      JWT_SECRET: replace-with-a-long-random-production-secret
+      JWT_SECRET: ${JWT_SECRET:-local-only-change-this-secret}
       UPLOAD_DIR: /app/server/uploads
-      MAX_UPLOAD_MB: 10
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:8080}
+      SEED_ADMIN_NAME: ${SEED_ADMIN_NAME:-ProjectFlow Admin}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@projectflow.dev}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-Admin@123}
     volumes:
       - uploads:/app/server/uploads
 

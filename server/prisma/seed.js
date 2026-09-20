@@ -1,19 +1,25 @@
 const { PrismaClient, Role } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+
 const prisma = new PrismaClient();
 
 async function main() {
-  const passwordHash = await bcrypt.hash('Admin@123', 12);
+  const email = (process.env.SEED_ADMIN_EMAIL || 'admin@projectflow.dev').toLowerCase().trim();
+  const password = process.env.SEED_ADMIN_PASSWORD || 'Admin@123';
+  const name = process.env.SEED_ADMIN_NAME || 'ProjectFlow Admin';
+
+  if (password.length < 8) throw new Error('SEED_ADMIN_PASSWORD must be at least 8 characters.');
+
+  const passwordHash = await bcrypt.hash(password, 12);
   await prisma.user.upsert({
-    where: { email: 'admin@projectflow.dev' },
-    update: {},
-    create: {
-      name: 'ProjectFlow Admin',
-      email: 'admin@projectflow.dev',
-      passwordHash,
-      role: Role.ADMIN
-    }
+    where: { email },
+    update: { name, role: Role.ADMIN },
+    create: { name, email, passwordHash, role: Role.ADMIN }
   });
-  console.log('Seeded admin@projectflow.dev / Admin@123');
+
+  console.log(`Seeded admin account: ${email}`);
 }
-main().finally(()=>prisma.$disconnect());
+
+main()
+  .catch((error) => { console.error(error); process.exitCode = 1; })
+  .finally(() => prisma.$disconnect());
